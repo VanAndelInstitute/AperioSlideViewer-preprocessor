@@ -14,3 +14,8 @@
     - marks slides to send (metadata) to CDR
 5.	pathologist review
 
+## Usage
+```
+docker run --rm -v ~/.aws:/home/svcuser/.aws vanandelinstitute/aperio-proc \
+    --file "barcode_imageid.svs" --source "source-bucket" --dest "dest-bucket" --table "dynamodb-table-name"
+```
