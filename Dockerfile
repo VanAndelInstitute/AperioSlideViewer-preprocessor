@@ -17,3 +17,4 @@ USER svcuser
 WORKDIR /home/svcuser
 COPY src/* ./
 ENTRYPOINT [ "./proc-aperio.sh" ]
+CMD [ "barcode_imageid.svs", "source-bucket", "dest-bucket", "dynamodb-table-name" ]
