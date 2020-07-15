@@ -1,4 +1,4 @@
-# Aperio SVS preprocessor for CPTAC
+# Preprocessor for Aperio Slide Viewer
 ## Workflow
 1. Scanner dumps files onto ScanScope Workstation with filename {barcode}_{imageid}.svs
 2. aws s3 sync from ScanScope Workstation to images S3 bucket
