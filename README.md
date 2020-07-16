@@ -1,4 +1,6 @@
 # Preprocessor for Aperio Slide Viewer
+Program that makes image pyramids from Aperio SVS files stored in Amazon S3. Also extracts metadata, label image, and thumbnail.
+
 ## Workflow
 1. Scanner dumps files onto ScanScope Workstation with filename {barcode}_{imageid}.svs
 2. aws s3 sync from ScanScope Workstation to images S3 bucket
@@ -16,6 +18,6 @@
 
 ## Usage
 ```
-docker run --rm -v ~/.aws:/home/svcuser/.aws vanandelinstitute/aperio-proc \
-    --file "barcode_imageid.svs" --source "source-bucket" --dest "dest-bucket" --table "dynamodb-table-name"
+$ alias aperio-proc='docker run --rm -ti -v ~/.aws:/home/svcuser/.aws vanandelinstitute/aperio-proc'
+$ aperio-proc --file "barcode_imageid.svs" --source "source-bucket" --dest "dest-bucket" --table "dynamodb-table-name"
 ```
