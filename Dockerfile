@@ -1,20 +1,33 @@
-# Only Debian seems to have the latest vips-tools build with openslide
-FROM debian:bullseye-slim
+# Build vips
+FROM amazonlinux:2 as installer
+RUN yum update -y
+RUN yum groupinstall -y "Development Tools"
+RUN yum install -y wget pkgconfig glib2-devel expat-devel libtiff-devel libjpeg-turbo-devel libexif-devel lcms2-devel libpng-devel libgsf-devel
 
-RUN apt-get -qq update && apt-get -qq upgrade && apt-get -qq install \
-    curl \
-    groff \
-    less \
-    unzip \
-    libvips-tools
+ENV VIPSVERSION 8.10.0
+RUN \
+  # Build libvips
+  cd /tmp && \
+  wget https://github.com/libvips/libvips/releases/download/v$VIPSVERSION-rc1/vips-$VIPSVERSION-rc1.tar.gz && \
+  tar zxvf vips-$VIPSVERSION-rc1.tar.gz && \
+  cd /tmp/vips-$VIPSVERSION && \
+  ./configure --enable-debug=no --without-python --enable-deprecated=no && \
+  make && \
+  make install DESTDIR=/vips
 
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \ 
-    && unzip awscliv2.zip \
-    && ./aws/install
+RUN ldconfig /
 
-RUN useradd -ms /bin/bash svcuser
-USER svcuser
-WORKDIR /home/svcuser
-COPY src/* ./
-ENTRYPOINT [ "./proc-aperio.sh" ]
+# Add (to) aws-cli
+FROM amazon/aws-cli
+RUN yum update -y \
+  && yum install -y less groff glib2 expat libtiff libjpeg-turbo libexif lcms2 libpng libgsf perl \
+  && yum clean all
+COPY --from=installer /vips/usr/local/bin/vips /usr/local/bin/
+COPY --from=installer /vips/usr/local/bin/vipsheader /usr/local/bin/
+COPY --from=installer /vips/usr/local/lib/libvips.so.42 /usr/local/lib
+
+COPY src/ /usr/local/bin/
+# Use /tmp for extra security
+WORKDIR /tmp
+ENTRYPOINT [ "aperio-proc.sh" ]
 CMD [ "barcode_imageid.svs", "source-bucket", "dest-bucket", "dynamodb-table-name" ]
