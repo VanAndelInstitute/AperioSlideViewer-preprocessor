@@ -30,4 +30,4 @@ COPY src/ /usr/local/bin/
 # Use /tmp for extra security
 WORKDIR /tmp
 ENTRYPOINT [ "aperio-proc.sh" ]
-CMD [ "barcode_imageid.svs", "source-bucket", "dest-bucket", "dynamodb-table-name" ]
+#CMD [ "-f barcode_imageid.svs", "-s source-bucket", "-d dest-bucket", "-t dynamodb-table-name" ]
