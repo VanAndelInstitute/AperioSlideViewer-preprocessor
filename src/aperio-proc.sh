@@ -42,13 +42,11 @@ aws configure set default.s3.max_concurrent_requests 50
 aws configure set default.s3.multipart_chunksize 40MB
 date +%T.%3N
 
-aws s3 cp s3://$SRCBKT/$FILE . || exit 1
-  exit 1
-fi
+aws s3 cp s3://$SRCBKT/$FILE .
 date +%T.%3N
 
 # extract, parse to json, and upload metadata to Slide table
-vipsheader -f image-description $FILE | parse_desc.pl > data.json || exit 1
+vipsheader -f image-description $FILE | parse_desc.pl > data.json
 aws dynamodb put-item \
     --table-name $TABLE \
     --item file://data.json
