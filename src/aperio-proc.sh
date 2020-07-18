@@ -1,4 +1,5 @@
 #!/bin/bash -e
+date +%T
 
 # NB: this script is for processing Aperio .SVS image files only
 
@@ -36,14 +37,13 @@ else
 fi
 
 set -x
+echo $barcode
+echo $imageid
 
 # download Aperio image file from S3 image bucket
 aws configure set default.s3.max_concurrent_requests 50
 aws configure set default.s3.multipart_chunksize 40MB
-date +%T.%3N
-
-aws s3 cp s3://$SRCBKT/$FILE .
-date +%T.%3N
+time aws s3 cp s3://$SRCBKT/$FILE .
 
 # extract, parse to json, and upload metadata to Slide table
 vipsheader -f image-description $FILE | parse_desc.pl > data.json
@@ -56,8 +56,6 @@ aws dynamodb update-item \
     --update-expression "SET Barcode = :bc" \
     --expression-attribute-values '{":bc":{"S":"'$barcode'"}}'
 
-set +x
-
 # Extract label and thumbnail images and upload to S3 viewer bucket.
 # OpenSlide is not used as it's no longer maintained.
 mkdir $imageid
@@ -67,18 +65,15 @@ for ((i=$npages-1;i>1;i--)); do
   [[ $desc =~ "label" ]] && break
 done
 
-set -x
-
-vips pngsave $FILE[page=1] $imageid/thumbnail.png
-vips pngsave $FILE[page=$i] $imageid/label.png
+vips jpegsave $FILE[page=1] $imageid/thumbnail.jpg
+vips jpegsave $FILE[page=$i] $imageid/label.jpg
 
 # Generate image pyramids
-date +%T.%3N
-vips dzsave $FILE $imageid/DeepZoom --layout dz
-date +%T.%3N
-vips dzsave $FILE $imageid/IIIF --layout iiif
-date +%T.%3N
+time vips dzsave $FILE $imageid/DeepZoom --layout dz &
+time vips dzsave $FILE $imageid/IIIF --layout iiif &
+wait
+touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
-aws s3 cp --quiet --recursive $imageid/ s3://$DSTBKT/$imageid
-date +%T.%3N
+time aws s3 sync $imageid/ s3://$DSTBKT/$imageid
+date +%T
