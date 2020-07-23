@@ -45,8 +45,14 @@ aws configure set default.s3.max_concurrent_requests 50
 aws configure set default.s3.multipart_chunksize 40MB
 time aws s3 cp s3://$SRCBKT/$FILE .
 
-# extract, parse to json, and upload metadata to Slide table
-vipsheader -f image-description $FILE | parse_desc.pl > data.json
+# extract fields and parse to json
+fields=$(vipsheader -a $FILE | grep "^aperio\.")
+fields=${fields//aperio\./}
+fields=${fields//: /:}
+fields=$(while IFS=: read -ra var; do echo "  \"${var[0]}\" = {\"S\": \"${var[1]}\"}"; done <<< "$fields")
+printf "{\n$fields\n}\n" > data.json
+
+# upload parsed metadata to Slide table
 aws dynamodb put-item \
     --table-name $TABLE \
     --item file://data.json

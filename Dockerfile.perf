@@ -57,6 +57,4 @@ COPY --from=builder /usr/local/lib/libopenslide.so.0 /usr/local/lib
 RUN cd /usr/local/lib && ln -s libvips.so.42 libvips.so && ln -s libgsf-1.so.114 libgsf-1.so && ln -s libopenslide.so.0 libopenslide.so
 COPY src/ /usr/local/bin/
 
-WORKDIR /aws
-ENTRYPOINT [ "aperio-proc.sh" ]
-#CMD [ "-f barcode_imageid.svs", "-s source-bucket", "-d dest-bucket", "-t dynamodb-table-name" ]
+RUN yum install -y procps-ng strace kernel-tools perf

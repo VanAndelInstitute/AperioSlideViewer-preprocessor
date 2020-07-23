@@ -1,7 +1,7 @@
 # Preprocessor for Aperio Slide Viewer
 Program that makes image pyramids from Aperio SVS files stored in Amazon S3. Also extracts metadata, label image, and thumbnail.
 
-OpenSlide is not used since it is [no longer actively maintained](https://github.com/openslide/openslide/issues/296).
+OpenSlide [must be used to properly open SVS files](https://github.com/libvips/libvips/issues/1492#issuecomment-662007128).
 
 ## General Aperio Slide Viewer workflow
 1. Scanner dumps files onto ScanScope Workstation with filename {barcode}_{imageid}.svs
