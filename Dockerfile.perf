@@ -37,7 +37,8 @@ RUN \
   wget https://github.com/libvips/libvips/releases/download/v${VIPSVERSION}-rc1/vips-${VIPSVERSION}-rc1.tar.gz && \
   tar zxvf vips-${VIPSVERSION}-rc1.tar.gz && \
   cd /tmp/vips-${VIPSVERSION} && \
-  ./configure --with-gsf=yes --with-openslide=yes --enable-debug=no --without-python --enable-deprecated=no && \
+  CFLAGS="-O2 -g -fno-omit-frame-pointer" CXXFLAGS="-O2 -g -fno-omit-frame-pointer" \
+  ./configure --with-gsf=yes --with-openslide=yes --enable-debug=no --enable-deprecated=no && \
   make && \
   make install
 
@@ -46,7 +47,7 @@ RUN ldconfig /
 # Add (to) aws-cli
 FROM amazon/aws-cli
 RUN yum update -y \
-  && yum install -y less groff glib2 expat libtiff libjpeg-turbo libexif lcms2 libpng cairo openjpeg-libs gdk-pixbuf2 \
+  && yum install -y less groff glib2 expat libtiff libjpeg-turbo libexif lcms2 perl libpng cairo openjpeg-libs gdk-pixbuf2 \
   && yum clean all
 COPY --from=builder /usr/local/bin/vips /usr/local/bin/
 COPY --from=builder /usr/local/bin/vipsheader /usr/local/bin/
@@ -57,4 +58,5 @@ COPY --from=builder /usr/local/lib/libopenslide.so.0 /usr/local/lib
 RUN cd /usr/local/lib && ln -s libvips.so.42 libvips.so && ln -s libgsf-1.so.114 libgsf-1.so && ln -s libopenslide.so.0 libopenslide.so
 COPY src/ /usr/local/bin/
 
-RUN yum install -y procps-ng strace kernel-tools perf
+RUN amazon-linux-extras enable BCC
+RUN yum install -y procps-ng strace kernel-tools perf bcc

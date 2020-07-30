@@ -45,34 +45,31 @@ aws configure set default.s3.max_concurrent_requests 50
 aws configure set default.s3.multipart_chunksize 40MB
 time aws s3 cp s3://$SRCBKT/$FILE .
 
+tiff_tags_to_json () {
+  while IFS=: read -ra var;
+  do
+    key="${var[0]//aperio\./}";
+    value="${var[1]}";
+    echo "  \"${key// /}\": {\"S\": \"${value/ /}\"},";
+  done
+}
+
 # extract fields and parse to json
-fields=$(vipsheader -a $FILE | grep "^aperio\.")
-fields=${fields//aperio\./}
-fields=${fields//: /:}
-fields=$(while IFS=: read -ra var; do echo "  \"${var[0]}\" = {\"S\": \"${var[1]}\"}"; done <<< "$fields")
-printf "{\n$fields\n}\n" > data.json
+tags=$(vipsheader -a $FILE | grep "^aperio\.")
+json=$(tiff_tags_to_json <<< "$tags")
+json="${json}\n  \"BarcodeID\": {\"S\": \"${barcode}\"}"
+printf "{\n$json\n}\n" > data.json
 
 # upload parsed metadata to Slide table
 aws dynamodb put-item \
     --table-name $TABLE \
     --item file://data.json
-aws dynamodb update-item \
-    --table-name $TABLE \
-    --key '{"ImageID":{"S":"'$imageid'"}}' \
-    --update-expression "SET Barcode = :bc" \
-    --expression-attribute-values '{":bc":{"S":"'$barcode'"}}'
 
-# Extract label and thumbnail images and upload to S3 viewer bucket.
-# OpenSlide is not used as it's no longer maintained.
 mkdir $imageid
-npages=`vipsheader -f n-pages $FILE`
-for ((i=$npages-1;i>1;i--)); do
-  desc=`vipsheader -f image-description $FILE[page=$i]`
-  [[ $desc =~ "label" ]] && break
-done
 
-vips jpegsave $FILE[page=1] $imageid/thumbnail.jpg
-vips jpegsave $FILE[page=$i] $imageid/label.jpg
+# Extract label and thumbnail images
+vips openslideload --associated thumbnail $FILE $imageid/thumbnail.jpg
+vips openslideload --associated label $FILE $imageid/label.jpg
 
 # Generate image pyramids
 time vips dzsave $FILE $imageid/DeepZoom --layout dz &
@@ -81,5 +78,5 @@ wait
 touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
-time aws s3 sync $imageid/ s3://$DSTBKT/$imageid
+time aws s3 sync $imageid/ s3://$DSTBKT/$imageid --only-show-errors
 date +%T
