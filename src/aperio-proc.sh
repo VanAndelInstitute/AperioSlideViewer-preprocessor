@@ -28,7 +28,7 @@ if [[ -z "${FILE-}" || -z "${SRCBKT-}" || -z "${DSTBKT-}" || -z "${TABLE-}" ]]; 
 fi
 
 # get barcoded ID and image ID from Aperio image filename
-if [[ $FILE =~ ^([-a-zA-Z0-9]+)_([0-9]+).svs$ ]]; then
+if [[ $FILE =~ ^([-a-zA-Z0-9 ]+)_([0-9]+).svs$ ]]; then
   barcode=${BASH_REMATCH[1]}
   imageid=${BASH_REMATCH[2]}
 else
@@ -46,11 +46,12 @@ aws configure set default.s3.multipart_chunksize 40MB
 time aws s3 cp s3://$SRCBKT/$FILE .
 
 tiff_tags_to_json () {
-  while IFS=: read -ra var;
+  while read line;
   do
-    key="${var[0]//aperio\./}";
-    value="${var[1]}";
-    echo "  \"${key// /}\": {\"S\": \"${value/ /}\"},";
+    line="${line//aperio\./}";
+    key="${line%:\ *}";
+    value="${line#*:\ }";
+    echo "  \"${key// /}\": {\"S\": \"${value}\"},";
   done
 }
 
