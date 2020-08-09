@@ -58,5 +58,5 @@ RUN cd /usr/local/lib && ln -s libvips.so.42 libvips.so && ln -s libgsf-1.so.114
 COPY src/ /usr/local/bin/
 
 WORKDIR /aws
-ENTRYPOINT [ "aperio-proc.sh" ]
+ENTRYPOINT [ "svs2vsv.sh" ]
 #CMD [ "-f barcode_imageid.svs", "-s source-bucket", "-d dest-bucket", "-t dynamodb-table-name" ]
