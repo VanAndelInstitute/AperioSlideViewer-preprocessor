@@ -43,7 +43,7 @@ echo $imageid
 # download Aperio image file from S3 image bucket
 aws configure set default.s3.max_concurrent_requests 50
 aws configure set default.s3.multipart_chunksize 40MB
-time aws s3 cp s3://$SRCBKT/$FILE .
+time aws s3 cp "s3://$SRCBKT/${FILE}" .
 
 tiff_tags_to_json () {
   while read line;
@@ -56,7 +56,7 @@ tiff_tags_to_json () {
 }
 
 # extract fields and parse to json
-tags=$(vipsheader -a $FILE | grep "^aperio\.")
+tags=$(vipsheader -a "${FILE}" | grep "^aperio\.")
 json=$(tiff_tags_to_json <<< "$tags")
 json="${json}\n  \"BarcodeID\": {\"S\": \"${barcode}\"}"
 printf "{\n$json\n}\n" > data.json
@@ -69,12 +69,12 @@ aws dynamodb put-item \
 mkdir $imageid
 
 # Extract label and thumbnail images
-vips openslideload --associated thumbnail $FILE $imageid/thumbnail.jpg
-vips openslideload --associated label $FILE $imageid/label.jpg
+vips openslideload --associated thumbnail "${FILE}" $imageid/thumbnail.jpg
+vips openslideload --associated label "${FILE}" $imageid/label.jpg
 
 # Generate image pyramids
-time vips dzsave $FILE $imageid/DeepZoom --layout dz &
-time vips dzsave $FILE $imageid/IIIF --layout iiif &
+time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz &
+time vips dzsave "${FILE}" $imageid/IIIF --layout iiif &
 wait
 touch $imageid/processing.done
 
