@@ -74,7 +74,7 @@ vips openslideload --associated label "${FILE}" $imageid/label.jpg
 
 # Generate image pyramids
 time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz &
-time vips dzsave "${FILE}" $imageid/IIIF --layout iiif &
+time vips dzsave "${FILE}" $imageid/IIIF --layout iiif --id="https://${$DSTBKT}.s3.us-east-2.amazonaws.com/${imageid}/IIIF" &
 wait
 touch $imageid/processing.done
 
