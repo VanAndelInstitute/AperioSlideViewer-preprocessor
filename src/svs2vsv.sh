@@ -27,18 +27,6 @@ if [[ -z "${FILE-}" || -z "${SRCBKT-}" || -z "${DSTBKT-}" || -z "${TABLE-}" ]]; 
   usage
 fi
 
-# get barcoded ID and image ID from Aperio image filename
-# if [[ $FILE =~ ^([-a-zA-Z0-9 ]+)_([0-9]+).svs$ ]]; then
-#   barcode=${BASH_REMATCH[1]}
-#   imageid=${BASH_REMATCH[2]}
-# else
-#   echo "filename format should be {barcode}_{imageid}.svs"
-#   exit 2
-# fi
-
-# set -x
-# echo $barcode
-# echo $imageid
 
 # download Aperio image file from S3 image bucket
 aws configure set default.s3.max_concurrent_requests 50
