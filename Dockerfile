@@ -65,7 +65,7 @@ RUN ldconfig /
 # Add (to) aws-cli
 FROM amazon/aws-cli
 RUN yum update -y \
-  && yum install -y less groff glib2 expat libtiff libjpeg-turbo libexif lcms2 libpng cairo openjpeg-libs gdk-pixbuf2 ImageMagick \
+  && yum install -y zip less groff glib2 expat libtiff libjpeg-turbo libexif lcms2 libpng cairo openjpeg-libs gdk-pixbuf2 ImageMagick \
   && yum clean all
 COPY --from=builder /usr/local/bin/vips /usr/local/bin/
 COPY --from=builder /usr/local/bin/vipsheader /usr/local/bin/
@@ -80,4 +80,4 @@ COPY src/ /usr/local/bin/
 
 WORKDIR /aws
 ENTRYPOINT [ "svs2vsv.sh" ]
-#CMD [ "-f barcode_imageid.svs", "-s source-bucket", "-d dest-bucket", "-t dynamodb-table-name" ]
+#CMD [ "-f imageid.svs", "-s source-bucket", "-d dest-bucket", "-t dynamodb-table-name" ]

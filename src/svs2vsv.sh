@@ -61,7 +61,11 @@ tiff_tags_to_json () {
 tags=$(vipsheader -a "${FILE}" | grep "^aperio\.")
 json=$(tiff_tags_to_json <<< "$tags")
 json="${json}\n  \"SlideID\": {\"S\": \"${slideid}\"},"
-json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"}"
+json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"},"
+height=$(vipsheader -f height "${FILE}")
+width=$(vipsheader -f width "${FILE}")
+json="${json}\n  \"height\": {\"N\": \"${height}\"},"
+json="${json}\n  \"width\": {\"N\": \"${width}\"}"
 printf "{\n$json\n}\n" > data.json
 
 # upload parsed metadata to Slide table
@@ -70,9 +74,13 @@ aws dynamodb put-item \
     --item file://data.json
 
 # Generate image pyramids
-time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz &
-time vips dzsave "${FILE}" $imageid/IIIF --layout iiif --id="https://${DSTBKT}.s3.us-east-2.amazonaws.com/${imageid}/IIIF" &
-wait
+time vips dzsave "${FILE}" x --layout dz #&
+#time vips dzsave "${FILE}" $imageid/IIIF --layout iiif --id="https://${DSTBKT}.s3.us-east-2.amazonaws.com/${imageid}/IIIF" &
+#wait
+pushd x_files
+zip -rq0 ../$imageid/DeepZoom *
+popd
+rm -rf x*
 touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
