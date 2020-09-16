@@ -1,6 +1,5 @@
 #!/bin/bash -e
 set -x
-date +%T
 
 # NB: this script is for processing Aperio .SVS image files only
 
@@ -78,5 +77,4 @@ time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz #&
 touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
-time aws s3 sync $imageid/ s3://$DSTBKT/$imageid --only-show-errors
-date +%T
+aws s3 sync $imageid/ s3://$DSTBKT/$imageid --only-show-errors
