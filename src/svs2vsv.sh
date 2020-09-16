@@ -29,8 +29,6 @@ fi
 
 
 # download Aperio image file from S3 image bucket
-aws configure set default.s3.max_concurrent_requests 50
-aws configure set default.s3.multipart_chunksize 40MB
 aws s3 cp "s3://$SRCBKT/${FILE}" .
 
 # get image id from tiff tags; create output folder
@@ -77,4 +75,5 @@ time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz #&
 touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
-aws s3 sync $imageid/ s3://$DSTBKT/$imageid --only-show-errors
+aws configure set default.s3.max_concurrent_requests 500
+aws --cli-read-timeout 0 --cli-connect-timeout 0 s3 sync $imageid/ s3://$DSTBKT/$imageid --only-show-errors
