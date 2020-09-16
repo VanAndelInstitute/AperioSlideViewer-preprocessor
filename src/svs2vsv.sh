@@ -1,4 +1,5 @@
 #!/bin/bash -e
+set -x
 date +%T
 
 # NB: this script is for processing Aperio .SVS image files only
@@ -62,6 +63,7 @@ tags=$(vipsheader -a "${FILE}" | grep "^aperio\.")
 json=$(tiff_tags_to_json <<< "$tags")
 json="${json}\n  \"SlideID\": {\"S\": \"${slideid}\"},"
 json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"},"
+json="${json}\n  \"Status\": {\"S\": \"QC Inspection\"},"
 height=$(vipsheader -f height "${FILE}")
 width=$(vipsheader -f width "${FILE}")
 json="${json}\n  \"height\": {\"N\": \"${height}\"},"
