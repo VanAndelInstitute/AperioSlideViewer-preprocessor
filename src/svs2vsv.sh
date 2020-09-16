@@ -73,13 +73,13 @@ aws dynamodb put-item \
     --item file://data.json
 
 # Generate image pyramids
-time vips dzsave "${FILE}" x --layout dz #&
+time vips dzsave "${FILE}" DeepZoom --layout dz #&
 #time vips dzsave "${FILE}" $imageid/IIIF --layout iiif --id="https://${DSTBKT}.s3.us-east-2.amazonaws.com/${imageid}/IIIF" &
 #wait
-pushd x_files
+pushd DeepZoom_files
 zip -q0 ../$imageid/DeepZoom */*  # exclude folder entries
 popd
-rm -rf x*
+#rm -rf x*
 touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
