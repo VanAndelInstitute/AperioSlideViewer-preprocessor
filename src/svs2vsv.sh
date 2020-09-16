@@ -1,4 +1,5 @@
 #!/bin/bash -e
+set -x
 date +%T
 
 # NB: this script is for processing Aperio .SVS image files only
@@ -62,6 +63,7 @@ tags=$(vipsheader -a "${FILE}" | grep "^aperio\.")
 json=$(tiff_tags_to_json <<< "$tags")
 json="${json}\n  \"SlideID\": {\"S\": \"${slideid}\"},"
 json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"}"
+json="${json}\n  \"Status\": {\"S\": \"QC Inspection\"}"
 printf "{\n$json\n}\n" > data.json
 
 # upload parsed metadata to Slide table
@@ -70,9 +72,9 @@ aws dynamodb put-item \
     --item file://data.json
 
 # Generate image pyramids
-time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz &
-time vips dzsave "${FILE}" $imageid/IIIF --layout iiif --id="https://${DSTBKT}.s3.us-east-2.amazonaws.com/${imageid}/IIIF" &
-wait
+time vips dzsave "${FILE}" $imageid/DeepZoom --layout dz #&
+#time vips dzsave "${FILE}" $imageid/IIIF --layout iiif --id="https://${DSTBKT}.s3.us-east-2.amazonaws.com/${imageid}/IIIF" &
+#wait
 touch $imageid/processing.done
 
 # Upload extracted,generated images to $imageid folder
