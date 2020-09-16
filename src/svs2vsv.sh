@@ -61,7 +61,7 @@ tiff_tags_to_json () {
 tags=$(vipsheader -a "${FILE}" | grep "^aperio\.")
 json=$(tiff_tags_to_json <<< "$tags")
 json="${json}\n  \"SlideID\": {\"S\": \"${slideid}\"},"
-json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"}"
+json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"},"
 json="${json}\n  \"Status\": {\"S\": \"QC Inspection\"}"
 printf "{\n$json\n}\n" > data.json
 
