@@ -31,7 +31,7 @@ fi
 # download Aperio image file from S3 image bucket
 aws configure set default.s3.max_concurrent_requests 50
 aws configure set default.s3.multipart_chunksize 40MB
-time aws s3 cp "s3://$SRCBKT/${FILE}" .
+aws s3 cp "s3://$SRCBKT/${FILE}" .
 
 # get image id from tiff tags; create output folder
 imageid=$(vipsheader -f aperio.ImageID ${FILE})
