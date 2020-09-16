@@ -60,8 +60,11 @@ tags=$(vipsheader -a "${FILE}" | grep "^aperio\.")
 json=$(tiff_tags_to_json <<< "$tags")
 json="${json}\n  \"SlideID\": {\"S\": \"${slideid}\"},"
 json="${json}\n  \"CaseID\": {\"S\": \"${caseid}\"},"
-json="${json}\n  \"Status\": {\"S\": \"QC Inspection\"}"
-printf "{\n$json\n}\n" > data.json
+json="${json}\n  \"Status\": {\"S\": \"QC Inspection\"},"
+height=$(vipsheader -f height "${FILE}")
+width=$(vipsheader -f width "${FILE}")
+json="${json}\n  \"height\": {\"N\": \"${height}\"},"
+json="${json}\n  \"width\": {\"N\": \"${width}\"}"printf "{\n$json\n}\n" > data.json
 
 # upload parsed metadata to Slide table
 aws dynamodb put-item \
