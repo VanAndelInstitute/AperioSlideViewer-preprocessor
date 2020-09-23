@@ -50,7 +50,9 @@ tiff_tags_to_json () {
     line="${line//aperio\./}";
     key="${line%:\ *}";
     value="${line#*:\ }";
-    [ "${key}" = "Date" ] && value=$(date -d ${value} +'%Y/%m/%d');
+    if [[ "$key" == "Date" || "$key" == "Time" || "$key" == "Time Zone" ]] ; then
+      continue;
+    fi
     echo "  \"${key// /}\": {\"S\": \"${value}\"},";
   done
 }
@@ -64,7 +66,13 @@ json="${json}\n  \"Status\": {\"S\": \"NEW\"},"
 height=$(vipsheader -f height "${FILE}")
 width=$(vipsheader -f width "${FILE}")
 json="${json}\n  \"height\": {\"N\": \"${height}\"},"
-json="${json}\n  \"width\": {\"N\": \"${width}\"}"
+json="${json}\n  \"width\": {\"N\": \"${width}\"},"
+scanDate=$(vipsheader -f "aperio.Date" "${FILE}")
+scanDate=$(date -d ${scanDate} +'%Y-%m-%d')
+scanTime=$(vipsheader -f "aperio.Time" "${FILE}")
+timeZone=$(vipsheader -f "aperio.Time Zone" "${FILE}")
+timeZone="${timeZone:3:6}"
+json="${json}\n  \"ScanDate\": {\"S\": \"${scanDate}T${scanTime}${timeZone}\"}"
 printf "{\n$json\n}\n" > data.json
 
 # upload parsed metadata to Slide table
